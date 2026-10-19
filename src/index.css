@@ -1,0 +1,152 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  font-family: system-ui, 'Segoe UI', Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.card {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.card.narrow {
+  max-width: 420px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+input {
+  padding: 8px;
+  font: inherit;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+fieldset {
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+button {
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+button.link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.success {
+  color: #15803d;
+}
+
+.hint {
+  color: #6b7280;
+}
+
+.topbar,
+.pager,
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.topbar {
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tabs button.active {
+  font-weight: bold;
+  border-bottom: 3px solid #1d4ed8;
+}
+
+.pager {
+  justify-content: center;
+  margin-top: 16px;
+}
+
+table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: start;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+td.actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.dialog {
+  max-width: 420px;
+  padding: 24px;
+  background: #fff;
+  border-top: 6px solid #b91c1c;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.conflict-message {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #b91c1c;
+}
