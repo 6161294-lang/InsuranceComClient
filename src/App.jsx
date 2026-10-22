@@ -1,8 +1,19 @@
 import { useEffect, useState } from 'react';
 import { clearSession, loadSession } from './api.js';
+import { ROLE_LABELS } from './components/format.js';
+import { LogoutIcon, ShieldIcon } from './components/icons.jsx';
+import { Button } from './components/ui.jsx';
+import AppraiserPage from './pages/AppraiserPage.jsx';
+import ClientPage from './pages/ClientPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import ManagerPage from './pages/ManagerPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
-import ClaimsPage from './pages/ClaimsPage.jsx';
+
+const HOME_BY_ROLE = {
+  Client: ClientPage,
+  Manager: ManagerPage,
+  Appraiser: AppraiserPage,
+};
 
 export default function App() {
   const [session, setSession] = useState(loadSession);
@@ -21,13 +32,37 @@ export default function App() {
 
   const logout = () => {
     clearSession();
+    window.location.hash = '';
     setSession(null);
     setScreen('login');
     setNotice('');
   };
 
   if (session) {
-    return <ClaimsPage employee={session.employee} onLogout={logout} />;
+    const Home = HOME_BY_ROLE[session.user.role];
+    return (
+      <>
+        <header className="topbar">
+          <div className="topbar-inner">
+            <div className="brand">
+              <span className="brand-mark">
+                <ShieldIcon size={20} />
+              </span>
+              ביטוח-קום
+            </div>
+            <div className="user-box">
+              <span className="user-name">{session.user.fullName}</span>
+              <span className="badge badge-primary">{ROLE_LABELS[session.user.role]}</span>
+              <Button variant="ghost" size="sm" onClick={logout} aria-label="התנתקות">
+                <LogoutIcon size={18} />
+                <span>התנתקות</span>
+              </Button>
+            </div>
+          </div>
+        </header>
+        <Home user={session.user} />
+      </>
+    );
   }
 
   if (screen === 'register') {
@@ -47,6 +82,7 @@ export default function App() {
       notice={notice}
       onLoggedIn={(newSession) => {
         setNotice('');
+        window.location.hash = '';
         setSession(newSession);
       }}
       onGoToRegister={() => {

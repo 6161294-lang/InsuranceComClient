@@ -12,7 +12,7 @@ export class ApiError extends Error {
   }
 }
 
-// sessionStorage is per tab, so two adjusters can be logged in side by side (handy for the race demo).
+// sessionStorage is per tab, so two appraisers can be logged in side by side (handy for the race demo).
 export function loadSession() {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
@@ -32,16 +32,26 @@ export function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
-async function request(path, { method = 'GET', body } = {}) {
+async function request(path, { method = 'GET', body, query } = {}) {
   const headers = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
   const session = loadSession();
   if (session) headers.Authorization = `Bearer ${session.token}`;
 
+  let url = `${BASE_URL}${path}`;
+  if (query) {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') params.set(key, value);
+    });
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+  }
+
   let response;
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    response = await fetch(url, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -55,6 +65,7 @@ async function request(path, { method = 'GET', body } = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
+    // An expired or invalid token on an authenticated request ends the session.
     if (response.status === 401 && session) {
       clearSession();
       window.dispatchEvent(new Event('session-expired'));
@@ -65,39 +76,50 @@ async function request(path, { method = 'GET', body } = {}) {
   return data;
 }
 
-export async function login(username, password) {
-  const result = await request('/api/auth/login', { method: 'POST', body: { username, password } });
-  const session = { token: result.token, expiresAt: result.expiresAt, employee: result.employee };
+// ---------- auth ----------
+export async function login(email, password) {
+  const result = await request('/api/auth/login', { method: 'POST', body: { email, password } });
+  const session = { token: result.token, expiresAt: result.expiresAt, user: result.user };
   saveSession(session);
   return session;
 }
 
-export function register({ fullName, username, password, specializationIds }) {
-  return request('/api/auth/register', {
-    method: 'POST',
-    body: { fullName, username, password, specializationIds },
-  });
-}
+export const registerClient = (data) => request('/api/auth/register', { method: 'POST', body: data });
 
-export function getInsuranceTypes() {
-  return request('/api/insurance-types');
-}
+// ---------- insurance types ----------
+export const getInsuranceTypes = () => request('/api/insurance-types');
+export const createInsuranceType = (data) => request('/api/insurance-types', { method: 'POST', body: data });
+export const updateInsuranceType = (id, data) => request(`/api/insurance-types/${id}`, { method: 'PUT', body: data });
+export const deleteInsuranceType = (id) => request(`/api/insurance-types/${id}`, { method: 'DELETE' });
 
-export function getClaims({ page, pageSize, status, handlerId }) {
-  const params = new URLSearchParams({ page, pageSize, sortBy: 'CreatedAt', descending: 'true' });
-  if (status) params.set('status', status);
-  if (handlerId) params.set('handlerId', handlerId);
-  return request(`/api/claims?${params}`);
-}
+// ---------- claims ----------
+export const getClaims = (query) => request('/api/claims', { query: { sortBy: 'OpenedAt', descending: true, ...query } });
+export const createClaim = (data) => request('/api/claims', { method: 'POST', body: data });
+export const updateClaim = (id, data) => request(`/api/claims/${id}`, { method: 'PUT', body: data });
+export const deleteClaim = (id) => request(`/api/claims/${id}`, { method: 'DELETE' });
 
-/** "Take for handling" = update the claim handler. 409 means another employee won. */
-export function takeClaim(claimId, version) {
-  return request(`/api/claims/${claimId}/handler`, { method: 'PUT', body: { version } });
-}
+/** "Take for handling" = update the claim handler. 409 means another appraiser won. */
+export const takeClaim = (id, version) => request(`/api/claims/${id}/handler`, { method: 'PUT', body: { version } });
 
-export function updateClaimStatus(claimId, status, version) {
-  return request(`/api/claims/${claimId}/status`, { method: 'PUT', body: { status, version } });
-}
+/** Cancelling a claim, submitting a draft, approving and rejecting are status updates. */
+export const setClaimStatus = (id, status, version) =>
+  request(`/api/claims/${id}/status`, { method: 'PUT', body: { status, version } });
+
+// ---------- clients ----------
+export const getClients = (query) => request('/api/clients', { query });
+export const getClient = (id) => request(`/api/clients/${id}`);
+export const updateClient = (id, data) => request(`/api/clients/${id}`, { method: 'PUT', body: data });
+export const updateClientInsuranceTypes = (id, insuranceTypeIds) =>
+  request(`/api/clients/${id}/insurance-types`, { method: 'PUT', body: { insuranceTypeIds } });
+
+// ---------- referrals ----------
+export const getReferrals = (query) => request('/api/referrals', { query });
+export const updateReferral = (id, notes) => request(`/api/referrals/${id}`, { method: 'PUT', body: { notes } });
+
+// ---------- employees ----------
+export const getEmployees = (query) => request('/api/employees', { query });
+export const createEmployee = (data) => request('/api/employees', { method: 'POST', body: data });
+export const deleteEmployee = (id) => request(`/api/employees/${id}`, { method: 'DELETE' });
 
 /** Flattens field validation errors from a 400 response into readable lines. */
 export function validationMessages(error) {
