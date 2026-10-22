@@ -10,7 +10,7 @@
 
 ## הרצה
 
-דרוש Node.js 20.19 ומעלה (או 22.12 ומעלה), והשרת רץ על `http://localhost:5080`.
+דרוש Node.js 20.19 ומעלה (או 22.12 ומעלה), והשרת (מאגר `InsuranceComServer`) רץ על `http://localhost:5080`.
 
 ```bash
 npm install
@@ -22,3 +22,7 @@ npm run dev
 ## הדגמת התחרות
 
 פתחו שתי לשוניות (ה-Token נשמר לכל לשונית), התחברו כ-`appraiser1@example.com` וכ-`appraiser2@example.com` (סיסמה `Appraiser123!`), ולחצו "קח לטיפול" על אותה תביעת רכב. הראשון מצליח, והשני מקבל את חלון ה-409.
+
+## פריסה
+
+הלקוח נבנה לקבצים סטטיים (`npm run build` → `dist`) ונפרס כאתר סטטי נפרד (ראו `render.yaml`). בבנייה חובה להגדיר `VITE_API_URL` לכתובת השרת, ובשרת להגדיר `Cors__AllowedOrigins` לכתובת האתר הזה.
