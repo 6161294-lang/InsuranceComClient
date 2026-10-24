@@ -26,3 +26,12 @@ npm run dev
 ## פריסה
 
 הלקוח נבנה לקבצים סטטיים (`npm run build` → `dist`) ונפרס כאתר סטטי נפרד (ראו `render.yaml`). בבנייה חובה להגדיר `VITE_API_URL` לכתובת השרת, ובשרת להגדיר `Cors__AllowedOrigins` לכתובת האתר הזה.
+
+## Deploying to Render (free static site)
+
+1. Deploy the API first (see the `InsuranceComServer` README) and note its URL.
+2. Render Dashboard -> New -> Blueprint -> connect `InsuranceComClient` -> when prompted set `VITE_API_URL` to the API URL (for example `https://insurance-claims-api.onrender.com`, no trailing slash) -> Apply. Build: `npm ci && npm run build`, publish directory `dist`.
+3. Add the site's URL to the API's `Cors__AllowedOrigins`.
+4. The site redeploys on every push to `main`. `VITE_API_URL` is read at build time, so changing it requires a redeploy.
+
+Troubleshooting: requests going to the static site itself (404) mean `VITE_API_URL` was empty at build time; CORS errors mean the API's `Cors__AllowedOrigins` does not match this site's origin.
